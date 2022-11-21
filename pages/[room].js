@@ -24,9 +24,40 @@ export default function Room() {
     });
   };
 
+  function handleCardClick(colour) {
+    socket.emit("select-belt-colour", colour);
+  }
+
   return (
-    <div>
-      <h1>socket poker</h1>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-2xl text-blue-800 mb-5">Socket Poker Room #{room}</h1>
+      <div className="flex justify-between">
+        <button
+          onClick={() => handleCardClick("white")}
+          className="w-24 h-24 border-2 rounded shadow-lg"
+        >
+          White
+        </button>
+        <button
+          onClick={() => handleCardClick("yellow")}
+          className="w-24 h-24 border-2 rounded shadow-lg"
+        >
+          Yellow
+        </button>
+        <button
+          onClick={() => handleCardClick("green")}
+          className="w-24 h-24 border-2 rounded shadow-lg"
+        >
+          Green
+        </button>
+        <button
+          onClick={() => handleCardClick("black")}
+          className="w-24 h-24 border-2 rounded shadow-lg"
+        >
+          Black
+        </button>
+      </div>
+      <div></div>
     </div>
   );
 }

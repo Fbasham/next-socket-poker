@@ -22,6 +22,10 @@ export default function SocketHandler(req, res) {
       socket.join(room);
       cb();
     });
+
+    socket.on("select-belt-colour", (colour) => {
+      console.log(socket.id, colour);
+    });
   });
 
   res.end();
