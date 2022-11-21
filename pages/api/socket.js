@@ -14,17 +14,20 @@ export default function SocketHandler(req, res) {
   io.on("connection", (socket) => {
     socket.on("join-room", ({ room, user }, cb) => {
       if (!(room in rooms)) {
-        rooms[room] = { admin: socket.id, users: { [socket.id]: user } };
+        rooms[room] = {
+          [socket.id]: { admin: true, user, belt: "" },
+        };
       } else {
-        rooms[room].users[socket.id] = user;
+        rooms[room][socket.id] = { user, belt: "" };
       }
-      console.log(rooms);
       socket.join(room);
       cb();
     });
 
-    socket.on("select-belt-colour", (colour) => {
-      console.log(socket.id, colour);
+    socket.on("select-belt-colour", ({ room, colour }) => {
+      console.log(socket.id, room, colour);
+      rooms[room][socket.id].belt = colour;
+      io.to(room).emit("room-data", rooms[room]);
     });
   });
 
