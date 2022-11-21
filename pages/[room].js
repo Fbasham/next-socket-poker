@@ -10,6 +10,8 @@ export default function Room() {
   const user = router.query.user;
 
   const [roomData, setRoomData] = useState({});
+  const [hide, setHide] = useState(true);
+  const [timer, setTimer] = useState(30);
 
   useEffect(() => {
     socketInitializer();
@@ -20,18 +22,31 @@ export default function Room() {
 
     socket = io();
 
-    socket.emit("join-room", { room, user }, () => {
-      console.log(`${user} joined room #${room}`);
-    });
+    socket.emit("join-room", { room, user });
 
     socket.on("room-data", (roomData) => {
-      console.log(roomData);
       setRoomData(roomData);
+    });
+
+    socket.on("hide-from-server", (hide) => {
+      setHide(hide);
+    });
+
+    socket.on("timer-update-from-server", (timer) => {
+      setTimer(timer);
     });
   };
 
   function handleCardClick(colour) {
     socket.emit("select-belt-colour", { room, colour });
+  }
+
+  function handleHideClick() {
+    socket.emit("hide-cards", { room, hide: !hide });
+  }
+
+  function handleTimerClick() {
+    socket.emit("timer-started", { room, timer: 30 });
   }
 
   return (
@@ -65,13 +80,42 @@ export default function Room() {
           Black
         </button>
       </div>
+      <div className="my-5 flex justify-between">
+        {roomData[socket?.id]?.admin && (
+          <button
+            onClick={handleHideClick}
+            className="px-2 rounded bg-blue-800 text-white hover:bg-blue-900"
+          >
+            Hide
+          </button>
+        )}
+        <div className="flex gap-2 ml-auto">
+          {roomData[socket?.id]?.admin && (
+            <button
+              onClick={handleTimerClick}
+              className="px-2 rounded bg-blue-800 text-white hover:bg-blue-900"
+            >
+              Timer
+            </button>
+          )}
+          <div className={`${timer < 10 ? "text-red-500" : "text-green-500"}`}>
+            :{("0" + timer).slice(-2)}
+          </div>
+        </div>
+      </div>
       <div className="mt-5 space-y-3">
         {Object.entries(roomData).map(([k, v]) => (
-          <div className="flex justify-between">
-            <div key={k} className={`${socket.id === k ? "bg-red-100" : ""}`}>
+          <div key={k} className="flex justify-between shadow-lg h-12 rounded">
+            <div
+              className={`${
+                socket?.id === k ? "bg-red-100" : ""
+              } flex items-center px-2 rounded-tl rounded-bl`}
+            >
               {v.user}
             </div>
-            <div>{v.belt}</div>
+            <div className="flex items-center px-2">
+              {socket?.id !== k && hide ? "???" : v.belt}
+            </div>
           </div>
         ))}
       </div>
