@@ -33,19 +33,8 @@ export default function SocketHandler(req, res) {
       io.to(room).emit("hide-from-server", hide);
     });
 
-    socket.on("timer-started", ({ room, timer }) => {
-      if (rooms[room]?.interval) {
-        clearInterval(rooms[room].interval);
-        delete rooms[room].interval;
-      }
-      let interval = setInterval(() => {
-        rooms[room].interval = interval;
-        io.to(room).emit("timer-update-from-server", timer--);
-        if (timer < 0) {
-          clearInterval(interval);
-          rooms[room].timerStarted = false;
-        }
-      }, 1000);
+    socket.on("update-timer", ({ room, timer }) => {
+      io.to(room).emit("update-timer-from-server", timer - 1);
     });
   });
 

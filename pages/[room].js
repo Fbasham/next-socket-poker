@@ -11,11 +11,26 @@ export default function Room() {
 
   const [roomData, setRoomData] = useState({});
   const [hide, setHide] = useState(true);
-  const [timer, setTimer] = useState(30);
+  const [timer, setTimer] = useState(31);
+  const [timerStarted, setTimerStarted] = useState(false);
 
   useEffect(() => {
     socketInitializer();
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (timerStarted) {
+      interval = setInterval(() => {
+        if (timer <= 1) {
+          setTimerStarted(false);
+          clearInterval(interval);
+        }
+        socket.emit("update-timer", { room, timer });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerStarted, timer]);
 
   const socketInitializer = async () => {
     await fetch("/api/socket");
@@ -32,7 +47,7 @@ export default function Room() {
       setHide(hide);
     });
 
-    socket.on("timer-update-from-server", (timer) => {
+    socket.on("update-timer-from-server", (timer) => {
       setTimer(timer);
     });
   };
@@ -46,7 +61,11 @@ export default function Room() {
   }
 
   function handleTimerClick() {
-    socket.emit("timer-started", { room, timer: 30 });
+    if (timerStarted) {
+      setTimerStarted(false);
+    }
+    setTimerStarted(true);
+    socket.emit("update-timer", { room, timer: 31 });
   }
 
   return (
